@@ -31,9 +31,7 @@ namespace Serilog.Sinks.PeriodicBatching
 
         public PortableTimer(Action<CancellationToken> onTick)
         {
-            if (onTick == null) throw new ArgumentNullException(nameof(onTick));
-
-            _onTick = onTick;
+            _onTick = onTick ?? throw new ArgumentNullException(nameof(onTick));
         }
 
         public void Start(TimeSpan interval)
@@ -50,12 +48,11 @@ namespace Serilog.Sinks.PeriodicBatching
                         _ => OnTick(),
                         CancellationToken.None,
                         TaskContinuationOptions.DenyChildAttach,
-                        TaskScheduler.Default)
-                    .AsObserved();
+                        TaskScheduler.Default);
             }
         }
 
-        private void OnTick()
+        void OnTick()
         {
             try
             {
@@ -120,13 +117,5 @@ namespace Serilog.Sinks.PeriodicBatching
                 _disposed = true;
             }
         }
-    }
-
-    static class TaskExtensions
-    {
-        public static async void AsObserved(this Task task)
-        {
-            await task.ConfigureAwait(false);
-        } 
     }
 }
